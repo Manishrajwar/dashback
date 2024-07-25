@@ -1,6 +1,6 @@
 // !   sendOTP
 // const OTP = require("../models/OTP");
-const User = require("../models/User");
+const User = require("../Models/user");
 // const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const Profile = require("../Models/Profile");
