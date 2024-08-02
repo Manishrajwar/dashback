@@ -2,11 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-      trim: true,
-    },
-    lastName: {
+    fullName: {
       type: String,
       trim: true,
     },
@@ -17,7 +13,6 @@ const userSchema = new mongoose.Schema(
     },
   password: {
       type: String,
-      required: true,
     },
 
     isClockIn:{
@@ -28,11 +23,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["Admin", "Employee", "Trial"],
       default:"Trial" , 
-      // required: true,
     },
     active: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     approved: {
       type: Boolean,
@@ -42,14 +36,16 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Profile",
     },
-    // whichDashboard: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   required: true,
-    //   ref: "Dashboard",
-    // },
+    projects:[
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+        default: null ,
+    } , 
+    ] , 
+  
     image: {
       type: String,
-      // required: true,
     },
     token: {
       type: String,
@@ -61,7 +57,25 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Timer",
       default: null ,
-  }
+  } , 
+  team:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Team",
+    default: null ,
+  }, 
+  employeeCode:{
+    type:String ,
+    default:"" ,
+  } ,
+  dashboardAllow:[
+    {
+      type:String, 
+    }
+  ] , 
+   teamId:{
+    type: String,
+    default:null , 
+   },
   },
   { timestamps: true }
 );

@@ -24,7 +24,10 @@ const auth = require("./router/auth");
 app.use("/api/v1/auth", auth);
 
 const dashboard = require("./router/dashboard");
-app.use("/api/v1/" , dashboard);
+app.use("/api/v1/auth" , dashboard);
+
+const  project = require("./router/project");
+app.use("/api/v1/auth" ,project);
 
 
 app.use(
