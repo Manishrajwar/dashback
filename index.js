@@ -29,6 +29,9 @@ app.use("/api/v1/auth" , dashboard);
 const  project = require("./router/project");
 app.use("/api/v1/auth" ,project);
 
+const task = require("./router/task");
+app.use("/api/v1/auth" ,task);
+
 
 app.use(
   fileUpload({

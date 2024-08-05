@@ -120,7 +120,7 @@ exports.getAllAdminProjects = async(req ,res)=>{
 
            const team = userDetail.team;
 
-           const allProj = await Project.find({team:team}).populate("Members");
+           const allProj = await Project.find({team:team}).populate("Members").sort({createdAt:-1});
 
            return res.status(200).json({
             success:true ,
@@ -143,7 +143,7 @@ exports.GetMyProjects = async (req, res) => {
       const userId = req.user.id;
   
       // Find all projects where the user is a member
-      const projects = await Project.find({ Members: userId }).populate('Members').populate('CreatedBy').populate('team');
+      const projects = await Project.find({ Members: userId }).populate('Members').populate('CreatedBy').populate('team').sort({createdAt:-1});
   
       res.status(200).json({
         success: true,
@@ -280,7 +280,7 @@ exports.GetNotification = async(req ,res)=>{
       const userId = req.user.id;
 
       // Retrieve all notifications for the user
-      const allNotifications = await Notification.find({ user: userId }).populate("sendBy");
+      const allNotifications = await Notification.find({ user: userId }).populate("sendBy").sort({createdAt:-1});
   
       // Count notifications with status "No Seen"
       const unseenCount = await Notification.countDocuments({
@@ -302,6 +302,8 @@ exports.GetNotification = async(req ,res)=>{
         })
     }
 }
+
+
 
 
 exports.MarkAllReadNotify = async(req ,res)=>{
