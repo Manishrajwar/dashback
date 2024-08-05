@@ -1,4 +1,4 @@
-const User = require("../Models/user");
+const User = require("../Models/User");
 const Timer = require("../Models/Timer");
 const jwt = require("jsonwebtoken");
 const Team = require("../Models/Team");

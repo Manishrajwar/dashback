@@ -1,7 +1,7 @@
 // !   sendOTP
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
-const User = require("../Models/user");
+const User = require("../Models/User");
 require("dotenv").config();
 
 //! signup
