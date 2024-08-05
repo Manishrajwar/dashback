@@ -9,13 +9,13 @@ const projectSchema = new mongoose.Schema(
     Members: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Users",
         default: null,
       },
     ],
     CreatedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Users",
     },
     Description: {
       type: String,

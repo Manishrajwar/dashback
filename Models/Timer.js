@@ -6,7 +6,7 @@ const TimerSchema = new mongoose.Schema(
      User:{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: "User",
+        ref: "Users",
      } ,
     clockIn: {
       type: String,

@@ -18,7 +18,7 @@ const TeamSchema = new mongoose.Schema(
         ] , 
         Members:[{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Users",
             default: null ,
         }] ,
         Projects:[{
@@ -27,7 +27,7 @@ const TeamSchema = new mongoose.Schema(
         }] ,
         Admin:{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Users",
         }, 
      ThreeLetter:{
         type:String, 

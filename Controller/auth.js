@@ -1,8 +1,8 @@
 // !   sendOTP
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
-const User = require("../Models/User");
 require("dotenv").config();
+const Users = require("../Models/Users")
 
 //! signup
 
@@ -20,7 +20,7 @@ exports.AdminLogin = async (req, res) => {
       });
     }
     // user check exist of not
-    const user = await User.findOne({ email });
+    const user = await Users.findOne({ email });
     
     if (!user) {
       return res.status(401).json({
@@ -87,7 +87,7 @@ exports.EmployeeLogin = async (req, res) => {
       });
     }
     
-     const user = await User.findOne({employeeCode:employeeCode});
+     const user = await Users.findOne({employeeCode:employeeCode});
      
    if(!user){
     return res.status(404).json({
@@ -163,7 +163,7 @@ exports.AdminSignup = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await Users.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -174,7 +174,7 @@ exports.AdminSignup = async (req, res) => {
     // hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    const user = await Users.create({
       email,
       password: hashedPassword,
       accountType: "Admin",

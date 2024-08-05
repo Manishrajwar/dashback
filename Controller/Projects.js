@@ -1,6 +1,6 @@
 const Project = require("../Models/Project");
 const Team = require("../Models/Team");
-const User = require("../Models/User");
+const User = require("../Models/Users");
 const ProjectInvite = require("../Models/ProjectInvite");
 const Notification = require("../Models/Notification");
 
