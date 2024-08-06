@@ -38,9 +38,7 @@ async function generateUniqueTeamId2() {
 }
 
 const checkUser = async (userId) => {
-  const userDetail = await User.findOne({ _id: userId })
-    .populate("additionalDetails")
-    .populate("timerDetail");
+  const userDetail = await User.findOne({ _id: userId });
 
   if (!userDetail) {
     return res.status(404).json({
@@ -87,9 +85,7 @@ exports.GetUserDetails = async (req, res) => {
         message: `login successfully`,
       });
     } else {
-      userDetail = await User.findOne({ _id: userId }).populate(
-        "additionalDetails"
-      );
+      userDetail = await User.findOne({ _id: userId }).populate("additionalDetails").populate("timerDetail");
 
       if (!userDetail) {
         return res.status(404).json({
@@ -114,7 +110,7 @@ exports.GetUserDetails = async (req, res) => {
 
 exports.UserClockIn = async (req, res) => {
   try {
-    const { clockIn, Note } = req.body;
+    const {  clockIn  , Note } = req.body;
 
     if (!clockIn) {
       return res.status(204).json({
@@ -140,6 +136,85 @@ exports.UserClockIn = async (req, res) => {
     return res.status(200).json({
       status: true,
       data: userDetail,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+    });
+  }
+};
+
+exports.UpdateTimerStatus = async (req, res) => {
+  try {
+    const { timerId, status } = req.body;
+    
+    if (status === "break") {
+      const currentTime = new Date(); 
+      const timerDetail = await Timer.findByIdAndUpdate(
+        timerId,
+        {
+          status: status,
+          breakIn: currentTime, 
+        },
+        { new: true }
+      );
+
+
+      return res.status(200).json({
+        status: true,
+        data: timerDetail,
+      });
+    }
+    else {
+      const currentTime = new Date(); 
+      const timerDetail = await Timer.findByIdAndUpdate(
+        timerId,
+        {
+          status: status,
+          breakOut: currentTime, 
+        },
+        { new: true }
+      );
+
+
+      return res.status(200).json({
+        status: true,
+        data: timerDetail,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+    });
+  }
+};
+
+exports.ClockOutHandler = async (req, res) => {
+  try {
+    const { timerId } = req.body;
+    const userId = req.user.id;
+    const currentTime = new Date(); 
+
+    const userDetail = await User.findById(userId);
+    userDetail.isClockIn = false;
+    userDetail.timerDetail = null;
+    await userDetail.save();
+
+    const timerDetail = await Timer.findByIdAndUpdate(
+      timerId,
+      {
+        clockOut: currentTime,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      status: true,
+      data: timerDetail,
     });
   } catch (error) {
     console.log(error);
@@ -225,28 +300,24 @@ exports.CreateAdminTeamId = async (req, res) => {
         success: false,
         message: "Insufficent data",
       });
-    }    
+    }
     const uniqueTeamId = await generateUniqueTeamId();
 
-      
     const newTeam = new Team({
-      teamName:teamName,
+      teamName: teamName,
       teamId: `${ThreeLetter}${uniqueTeamId}`,
-      ThreeLetter:ThreeLetter , 
-      dashboardAllow:dashboardAllow, 
-      Admin: userId
+      ThreeLetter: ThreeLetter,
+      dashboardAllow: dashboardAllow,
+      Admin: userId,
     });
 
-    const userDetail  = await User.findById(userId);
+    const userDetail = await User.findById(userId);
     userDetail.teamId = `${ThreeLetter}${uniqueTeamId}`;
     userDetail.dashboardAllow = dashboardAllow;
-    userDetail.team = newTeam?._id
+    userDetail.team = newTeam?._id;
     await userDetail.save();
 
-
     await newTeam.save();
-
-    
 
     return res.status(201).json({
       status: 201,
@@ -263,21 +334,21 @@ exports.CreateAdminTeamId = async (req, res) => {
 };
 exports.EditAdminTeam = async (req, res) => {
   try {
-    const {  teamId, dashboardAllow, teamName } = req.body;
+    const { teamId, dashboardAllow, teamName } = req.body;
 
-    if ( !dashboardAllow || !teamName) {
+    if (!dashboardAllow || !teamName) {
       return res.status(400).json({
         success: false,
         message: "Insufficent data",
       });
-    }    
- 
-    const teamDtail = await Team.findById(teamId);
-     teamDtail.dashboardAllow = dashboardAllow;
-     teamDtail.teamName = teamName;
+    }
 
-      await teamDtail.save();
-      
+    const teamDtail = await Team.findById(teamId);
+    teamDtail.dashboardAllow = dashboardAllow;
+    teamDtail.teamName = teamName;
+
+    await teamDtail.save();
+
     return res.status(201).json({
       success: true,
       message: "Team created successfully",
@@ -292,18 +363,19 @@ exports.EditAdminTeam = async (req, res) => {
   }
 };
 
-exports.GetTeamDetails = async(req ,res)=>{
+exports.GetTeamDetails = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const teamDetails = await Team.findOne({Admin:userId}).populate("Members");
-     if(!teamDetails){
+    const teamDetails = await Team.findOne({ Admin: userId }).populate(
+      "Members"
+    );
+    if (!teamDetails) {
       return res.status(201).json({
         success: false,
         message: "Team Not found",
       });
-     }
-
+    }
 
     return res.status(201).json({
       success: true,
@@ -317,115 +389,98 @@ exports.GetTeamDetails = async(req ,res)=>{
       message: error.message,
     });
   }
-}
+};
 
-exports.CreateTeamMember =async(req ,res)=>{
-    try{
+exports.CreateTeamMember = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-      const userId  = req.user.id;
+    const { email, fullName, ContactNumber } = req.body;
 
-       const {  email,  fullName , ContactNumber  } = req.body;
-        
-       if(!email || !fullName || !ContactNumber){
-        return res.status(400).json({
-          success:false ,
-          message:"Insuffcient data" ,
-        })
-       }
+    if (!email || !fullName || !ContactNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Insuffcient data",
+      });
+    }
 
-       const isEmailExist = await User.findOne({email:email});
-       console.log('ieamilexit ',isEmailExist);
-        
-       if(isEmailExist){
-        return  res.status(400).json({
-          success:false ,
-          message:"Email is Already Registered"
-        })
-       }
+    const isEmailExist = await User.findOne({ email: email });
 
-       const uniqueTeamId = await generateUniqueTeamId2();
- console.log("unique ",uniqueTeamId);
+    if (isEmailExist) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is Already Registered",
+      });
+    }
 
-    const teamDetail = await Team.findOne({Admin:userId});
-    console.log("reamde",teamDetail);
+    const uniqueTeamId = await generateUniqueTeamId2();
 
-    if(!teamDetail){
+    const teamDetail = await Team.findOne({ Admin: userId });
+
+    if (!teamDetail) {
       return res.status(404).json({
-       success:false ,
-       message:"Team not found"
-      })
+        success: false,
+        message: "Team not found",
+      });
     }
-    let employeeCode = `${teamDetail.ThreeLetter}${uniqueTeamId}`
-    console.log("ee ",employeeCode);
+    let employeeCode = `${teamDetail.ThreeLetter}${uniqueTeamId}`;
 
+    const userCreate = await User.create({
+      fullName: fullName,
+      email: email,
+      password: "",
+      accountType: "Employee",
+      teamId: teamDetail?.teamId,
+      team: teamDetail?._id,
+      employeeCode: employeeCode,
+    });
 
-       const userCreate = await User.create({fullName:fullName ,email:email ,password:"", accountType:"Employee" ,teamId:teamDetail?.teamId  , team:teamDetail?._id ,employeeCode:employeeCode});
-       console.log('usecreate',userCreate);
+    teamDetail.Members.push(userCreate?._id);
+    await teamDetail.save();
 
-        teamDetail.Members.push(userCreate?._id);
-        await teamDetail.save();
+    return res.status(200).json({
+      success: true,
+      message: "Successfuly Created User",
+      userCreate,
+      teamDetail,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+    });
+  }
+};
 
-        return res.status(200).json({
-          success:true ,
-          message:"Successfuly Created User" , 
-          userCreate, 
-          teamDetail
-        })
+exports.EditMember = async (req, res) => {
+  try {
+    const { fullName, dashboardAllow, email, employeeCode, _id } = req.body;
 
-    } catch(error){
-        console.log(error);
-        return res.status(500).json({
-            status: 500 ,
-            message:error.message
-        })
+    const findMem = await User.findById(_id);
+    if (!findMem) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
     }
-}
 
+    findMem.fullName = fullName;
+    findMem.dashboardAllow = dashboardAllow;
+    findMem.email = email;
+    findMem.employeeCode = employeeCode;
 
+    await findMem.save();
 
-
-exports.EditMember =async(req ,res)=>{
-    try{
-
-       const {fullName , dashboardAllow , email , employeeCode , _id} =req.body;
-
-       const findMem = await  User.findById(_id);
-        if(!findMem){
-          return res.status(404).json({
-            status:false , 
-            message:"User not found"
-          })
-        }
-
-        findMem.fullName = fullName;
-        findMem.dashboardAllow = dashboardAllow;
-        findMem.email =email;
-        findMem.employeeCode = employeeCode;
-        
-        await findMem.save();
-
-        return res.status(200).json({
-          success:true , 
-          message:"Successfuly done"
-        })
-
-    } catch(error){
-        console.log(error);
-        return res.status(500).json({
-            status: 500 ,
-            message:error.message
-        })
-    }
-}
-
-// exports.GetUserDetails =async(req ,res)=>{
-//     try{
-
-//     } catch(error){
-//         console.log(error);
-//         return res.status(500).json({
-//             status: 500 ,
-//             message:error.message
-//         })
-//     }
-// }
+    return res.status(200).json({
+      success: true,
+      message: "Successfuly done",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+    });
+  }
+};

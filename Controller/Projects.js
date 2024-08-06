@@ -120,7 +120,7 @@ exports.getAllAdminProjects = async(req ,res)=>{
 
            const team = userDetail.team;
 
-           const allProj = await Project.find({team:team}).populate("Members").sort({createdAt:-1});
+           const allProj = await Project.find({team:team}).populate("Members").populate("task").populate("CreatedBy").sort({createdAt:-1});
 
            return res.status(200).json({
             success:true ,

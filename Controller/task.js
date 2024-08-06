@@ -22,6 +22,8 @@ exports.createTask =async(req ,res)=>{
 
            let title2 = `Task Assign ${projectDetail.Name}`;
 
+            projectDetail.task.push(taskDetail._id);
+            await projectDetail.save();
 
            const notify = await Notification.create({title:title2 ,Description:title , user:member , sendBy:userId });
            
@@ -193,8 +195,22 @@ exports.UpdateTaskStatus =async(req ,res)=>{
 exports.DeleteTask =async(req ,res)=>{
     try{
 
-        const {taskId} = req.params;
+        const {taskId , projectId} = req.params;
 
+         // Find the project to remove the task from
+         const project = await Project.findById(projectId);
+        
+         if (!project) {
+             return res.status(404).json({
+                 success: false,
+                 message: "Project not found",
+             });
+         }
+ 
+         project.task.pull(taskId);
+         await project.save();
+
+         
          await Task.findByIdAndDelete(taskId);
 
         return res.status(200).json({

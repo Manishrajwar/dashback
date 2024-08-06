@@ -36,7 +36,12 @@ const TimerSchema = new mongoose.Schema(
     Note:{
         type:String , 
         trim:true , 
+        default:null
     } , 
+    status:{
+        type:String, 
+        default:"break" , 
+    }
    
   
   },
