@@ -2,6 +2,7 @@ const User = require("../Models/Users");
 const Timer = require("../Models/Timer");
 const jwt = require("jsonwebtoken");
 const Team = require("../Models/Team");
+const { formatDateToDayMonthYear } = require("./commonFunc");
 
 function generateRandomId(length = 6) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -123,10 +124,15 @@ exports.UserClockIn = async (req, res) => {
 
     const userDetail = await checkUser(userId);
 
+    const respDate = await formatDateToDayMonthYear(Date.now());
+    const currentTime = new Date(); 
+
     const timerdetails = await Timer.create({
       User: userDetail?._id,
       clockIn: clockIn,
-      Note,
+      Note,  
+      clockInTime:currentTime , 
+      date:respDate
     });
 
     userDetail.isClockIn = true;
@@ -484,3 +490,25 @@ exports.EditMember = async (req, res) => {
     });
   }
 };
+
+
+exports.ClockInDetails = async (req, res) => {
+  try {
+    const { date } = req.body;
+    const userId = req.user.id;
+
+    const data = await Timer.find({ User: userId , date:date });
+
+     return res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.log("error",error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+

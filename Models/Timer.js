@@ -18,9 +18,12 @@ const TimerSchema = new mongoose.Schema(
         trim:true , 
     } ,
     date:{
-        type:Date , 
-        default:Date.now() ,
-    } , 
+        type:String , 
+
+    } ,
+    clockInTime:{
+        type:String,
+    }  , 
     breakIn:{
         type:String ,
         trim:true , 
@@ -48,4 +51,6 @@ const TimerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+  
 module.exports = mongoose.model("Timer", TimerSchema);
