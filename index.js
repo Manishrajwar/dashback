@@ -32,6 +32,9 @@ app.use("/api/v1/auth" ,project);
 const task = require("./router/task");
 app.use("/api/v1/auth" ,task);
 
+const event = require("./router/event");
+app.use("/api/v1/auth" , event);
+
 
 app.use(
   fileUpload({
