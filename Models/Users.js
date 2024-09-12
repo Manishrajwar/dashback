@@ -70,9 +70,10 @@ const userSchema = new mongoose.Schema(
   } ,
   dashboardAllow:[
     {
-      type:String, 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Page",
     }
-  ] , 
+] , 
    teamId:{
     type: String,
     default:null , 

@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 
-const {GetUserDetails , UserClockIn ,ClockOutHandler ,UpdateTimerStatus ,  CreateAdminTeamId , GetTeamDetails , CreateTeamMember , EditMember,EditAdminTeam , ClockInDetails , CreateMeetLink} = require("../Controller/Dashboard");
+const {GetUserDetails , UserClockIn ,ClockOutHandler ,UpdateTimerStatus ,  CreateAdminTeamId , GetTeamDetails , CreateTeamMember , EditMember,EditAdminTeam , ClockInDetails , RemoveTeamUser , TeamClockInUser} = require("../Controller/Dashboard");
 const {auth, isAdmin } = require("../middleware/auth");
 
 router.get("/getUserDetails"  ,auth , GetUserDetails);
@@ -17,6 +17,9 @@ router.get("/getTeamDetails" ,auth  , GetTeamDetails);
 router.post("/createTeamMember" ,auth , isAdmin , CreateTeamMember);
 router.post("/editMember" ,auth , isAdmin , EditMember);
 router.put("/EditAdminTeam" ,auth , isAdmin , EditAdminTeam);
+router.delete("/RemoveTeamUser/:empId" , auth , isAdmin , RemoveTeamUser);
 
+
+router.get("/TeamClockInUser" , auth , TeamClockInUser);
 
 module.exports = router;

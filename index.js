@@ -29,6 +29,9 @@ app.use("/api/v1/auth" , dashboard);
 const  project = require("./router/project");
 app.use("/api/v1/auth" ,project);
 
+const page = require("./router/page");
+app.use("/api/v1/auth" , page);
+
 const task = require("./router/task");
 app.use("/api/v1/auth" ,task);
 

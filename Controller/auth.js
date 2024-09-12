@@ -2,6 +2,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const Page = require("../Models/Page")
 const Users = require("../Models/Users")
 
 //! signup
@@ -11,6 +12,7 @@ exports.AdminLogin = async (req, res) => {
   try {
     //  get data from req.body
     const { email, password } = req.body;
+    console.log("email ",email , "pass",password);
 
     //  validation data
     if (!email || !password) {
@@ -180,6 +182,25 @@ exports.AdminSignup = async (req, res) => {
       accountType: "Admin",
     });
 
+    //  const allPages = await Page.find({});
+     
+    //  allPages.forEach((page)=>{
+    //   user.dashboardAllow.push(page._id);
+    // }) 
+
+    // await user.save();
+
+    const allPages = await Page.find({});
+
+// Initialize the array if not already
+user.dashboardAllow = user.dashboardAllow || [];
+
+// Add page ids, avoiding duplicates
+const pageIds = allPages.map((page) => page._id);
+user.dashboardAllow = [...new Set([...user.dashboardAllow, ...pageIds])];
+
+await user.save();
+    
     // return res
     return res.status(200).json({
       success: true,

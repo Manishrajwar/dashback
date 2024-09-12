@@ -2,6 +2,7 @@ const User = require("../Models/Users");
 const Timer = require("../Models/Timer");
 const jwt = require("jsonwebtoken");
 const Team = require("../Models/Team");
+const Project = require("../Models/Project")
 const { formatDateToDayMonthYear } = require("./commonFunc");
 
 function generateRandomId(length = 6) {
@@ -86,7 +87,7 @@ exports.GetUserDetails = async (req, res) => {
         message: `login successfully`,
       });
     } else {
-      userDetail = await User.findOne({ _id: userId }).populate("additionalDetails").populate("timerDetail");
+      userDetail = await User.findOne({ _id: userId }).populate("timerDetail").populate("dashboardAllow");
 
       if (!userDetail) {
         return res.status(404).json({
@@ -94,6 +95,8 @@ exports.GetUserDetails = async (req, res) => {
           message: "User not found",
         });
       }
+
+      console.log("usedtail ",userDetail);
 
       return res.status(200).json({
         status: true,
@@ -338,9 +341,11 @@ exports.CreateAdminTeamId = async (req, res) => {
     });
   }
 };
+
 exports.EditAdminTeam = async (req, res) => {
   try {
     const { teamId, dashboardAllow, teamName } = req.body;
+    const userId =req.user.id;
 
     if (!dashboardAllow || !teamName) {
       return res.status(400).json({
@@ -352,14 +357,18 @@ exports.EditAdminTeam = async (req, res) => {
     const teamDtail = await Team.findById(teamId);
     teamDtail.dashboardAllow = dashboardAllow;
     teamDtail.teamName = teamName;
-
     await teamDtail.save();
+
+    const userDetail = await User.findById(userId);
+     userDetail.dashboardAllow = dashboardAllow;
+     await userDetail.save();
 
     return res.status(201).json({
       success: true,
       message: "Team created successfully",
       team: teamDtail,
     });
+
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -412,11 +421,11 @@ exports.CreateTeamMember = async (req, res) => {
 
     const isEmailExist = await User.findOne({ email: email });
 
-    if (isEmailExist) {
+    if (isEmailExist && isEmailExist.teamId) {
       return res.status(400).json({
         success: false,
-        message: "Email is Already Registered",
-      });
+        message: "User is Already Registered With Other Team",
+      })
     }
 
     const uniqueTeamId = await generateUniqueTeamId2();
@@ -511,5 +520,89 @@ exports.ClockInDetails = async (req, res) => {
     });
   }
 };
+
+exports.RemoveTeamUser = async (req, res) => {
+  try {
+    const { empId } = req.params;
+    const userId = req.user.id;
+
+ const userDetail = await User.findById(userId);
+
+  const teamDetail = await Team.findById(userDetail?.team);
+
+ if (teamDetail) {
+  teamDetail.Members.pull(empId);
+  await teamDetail.save();
+
+  const empdetail = await User.findById(empId);
+   empdetail.teamId = null;
+   empdetail.dashboardAllow = [];
+   empdetail.team = null;
+   empdetail.employeeCode = "";
+
+   await empdetail.save();
+
+   const projects = await Project.find({ team: teamDetail._id, Members: empId });
+
+   for (const project of projects) {
+    project.Members.pull(empId);
+    await project.save();
+  }
+
+  return res.status(200).json({
+    success:true ,
+    message:"Done "
+  })
+
+} else {
+  return res.status(404).json({
+    success:false ,
+    message:"No team found"
+  })
+}
+   
+  } catch (error) {
+    console.log("error",error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.TeamClockInUser = async(req ,res)=>{
+  try{
+
+    const userId = req.user.id;
+     const userDetails = await User.findById(userId);
+       let teamId = userDetails.team;
+       console.log("teaid ",teamId);
+       const teamDetails = await Team.findById(teamId).populate({
+        path: 'Members',
+        match: { isClockIn: true }, 
+      });
+
+      console.log("teadetail ",teamDetails);
+
+    // Populate the timerDetail field within the populated Members array
+const activeMembersWithTimerDetails = await User.populate(teamDetails.Members, {
+  path: 'timerDetail',
+});
+
+console.log("activemembers ",activeMembersWithTimerDetails);
+
+// Return the result with the populated timerDetail
+return res.status(200).json({
+  success: true,
+  data: activeMembersWithTimerDetails,
+});
+
+  } catch(error){
+    return res.status(500).json({
+      success:false ,
+      message: error.message
+    })
+  }
+}
 
 

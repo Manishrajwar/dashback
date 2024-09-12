@@ -13,7 +13,8 @@ const TeamSchema = new mongoose.Schema(
         } , 
         dashboardAllow:[
             {
-                type:String ,
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Page",
             }
         ] , 
         Members:[{

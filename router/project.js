@@ -6,7 +6,7 @@ const {CreateProject , EditProject ,deleteProject ,GetNotification , DeleteNotif
 const { isAdmin ,auth } = require("../middleware/auth");
 
 // Import the required controllers and middleware functions
-router.post("/getMyProjectcreateProject" , auth , isAdmin, CreateProject);
+router.post("/createProject" , auth , isAdmin, CreateProject);
 router.put("/editProject" , auth , isAdmin, EditProject);
 router.delete("/deleteProject" , auth , isAdmin, deleteProject);
 router.get("/getAllProjects" , auth ,isAdmin ,  getAllAdminProjects);
